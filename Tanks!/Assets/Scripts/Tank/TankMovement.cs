@@ -52,6 +52,7 @@ public class TankMovement : MonoBehaviour
         // Store the player's input and make sure the audio for the engine is playing.
 		m_MovementInputValue = Input.GetAxis(m_MovementAxisName);
 		m_TurnInputValue = Input.GetAxis(m_TurnAxisName);
+		//print (m_MovementInputValue + " : " + m_TurnInputValue);
 		
 		EngineAudio();
     }
@@ -102,4 +103,12 @@ public class TankMovement : MonoBehaviour
 		Quaternion turnRotation = Quaternion.Euler(0f, turn, 0f);
 		m_Rigidbody.MoveRotation(m_Rigidbody.rotation * turnRotation);
     }
+	
+	public float GetMovementValue(){
+		return m_MovementInputValue;
+	}
+	
+	public float GetTurnValue(){
+		return m_TurnInputValue;
+	}
 }

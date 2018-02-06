@@ -17,18 +17,22 @@ public class GameManager : MonoBehaviour
     private int m_RoundNumber;              
     private WaitForSeconds m_StartWait;     
     private WaitForSeconds m_EndWait;       
-/*    private TankManager m_RoundWinner;
-    private TankManager m_GameWinner;       
-*/
+    private TankManager m_RoundWinner;
+    private TankManager m_GameWinner;   
+	private InputSorter m_inputSorter;    
+
+	private void Awake(){
+		
+	}
 
     private void Start()
-    {
+    {		
         m_StartWait = new WaitForSeconds(m_StartDelay);
         m_EndWait = new WaitForSeconds(m_EndDelay);
 
         SpawnAllTanks();
         SetCameraTargets();
-
+		
         StartCoroutine(GameLoop());
     }
 
@@ -57,38 +61,78 @@ public class GameManager : MonoBehaviour
         m_CameraControl.m_Targets = targets;
     }
 
-
     private IEnumerator GameLoop()
     {
         yield return StartCoroutine(RoundStarting());
         yield return StartCoroutine(RoundPlaying());
         yield return StartCoroutine(RoundEnding());
 
-/*        if (m_GameWinner != null)
+        if (m_GameWinner != null)
         {
-            SceneManager.LoadScene(0);
+            Application.LoadLevel(Application.loadedLevel);
         }
         else
         {
             StartCoroutine(GameLoop());
         }
-*/    }
+    }
 
 
     private IEnumerator RoundStarting()
     {
+		ResetAllTanks();
+		DisableTankControl();
+		InputSorter.mySorter.Disable();
+		LightManager.myManager.ResetLightScheme();
+		
+		m_CameraControl.SetStartPositionAndSize();
+		
+		m_RoundNumber++;
+		m_MessageText.text = "ROUND " + m_RoundNumber;
+		
         yield return m_StartWait;
     }
 
 
     private IEnumerator RoundPlaying()
     {
-        yield return null;
+		EnableTankControl();
+		InputSorter.mySorter.Enable();
+
+		m_MessageText.text = string.Empty;
+		
+		while (!OneTankLeft())
+		{
+			gameObject.GetComponent<InputSorter>().CheckInput();
+			if (InputSorter.mySorter.IsThereInput()){
+				LightManager.myManager.SortLightScheme();
+			} else {
+				LightManager.myManager.ResetLightScheme();
+				InputSorter.mySorter.ResetSorter(InputSorter.mySorter.m_previousSorter);
+			}
+			
+			yield return null;
+		}
     }
 
 
     private IEnumerator RoundEnding()
     {
+		DisableTankControl();
+		InputSorter.mySorter.Disable();
+
+		m_RoundWinner = null;
+		m_RoundWinner = GetRoundWinner();
+		
+		if (m_RoundWinner != null)
+			m_RoundWinner.m_Wins++;
+			
+		m_GameWinner = GetGameWinner();
+		
+		string message = EndMessage();
+		
+		m_MessageText.text = message;
+		
         yield return m_EndWait;
     }
 
@@ -106,7 +150,6 @@ public class GameManager : MonoBehaviour
         return numTanksLeft <= 1;
     }
 
-/*
     private TankManager GetRoundWinner()
     {
         for (int i = 0; i < m_Tanks.Length; i++)
@@ -150,7 +193,6 @@ public class GameManager : MonoBehaviour
 
         return message;
     }
-*/
 
     private void ResetAllTanks()
     {
