@@ -50,6 +50,12 @@ public class AudioShape : MonoBehaviour {
 		}
 	}
 	
+	OnCollisionEnter(Collision collision){
+		if (collision.gameObject.tag != "Player") return;
+		
+		
+	}
+	
 	/*
 	void OnCollisionStay(Collision collider){
 		if (collider.transform.position.tag == "Player"){
